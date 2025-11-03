@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF‑8">
+  <title>Manchot Étude Timer</title>
+  <style>
+    body { font‑family: Arial, sans‑serif; text‑align: center; padding: 20px; }
+    .timer { font‑size: 48px; margin: 20px; }
+    .controls button { padding: 10px 20px; font‑size: 16px; }
+    .tasks { margin: 20px; text‑align: left; display: inline‑block; }
+    .coins { font‑size: 24px; margin: 20px; }
+    .penguin { width: 150px; margin: 20px auto; }
+  </style>
+</head>
+<body>
+  <h1>Mon Manchot Étude Timer</h1>
+  <div class="penguin">
+    <img id="penguinImg" src="https://via.placeholder.com/150?text=🐧" alt="Manchot">
+  </div>
+  <div class="timer" id="timer">25:00</div>
+  <div class="controls">
+    <button id="startBtn">Démarrer</button>
+    <button id="pauseBtn" disabled>Pause</button>
+    <button id="resetBtn">Réinitialiser</button>
+  </div>
+  <div class="coins">Coins gagnés : <span id="coinCount">0</span></div>
+  
+  <div class="tasks">
+    <h3>Ma liste de tâches</h3>
+    <input type="text" id="newTaskInput" placeholder="Ajouter une tâche…">
+    <button id="addTaskBtn">Ajouter</button>
+    <ul id="taskList"></ul>
+  </div>
+  
+  <script>
+    const workDuration = 25 * 60; // en secondes
+    const breakDuration = 5 * 60;
+    let timeLeft = workDuration;
+    let isWorking = true;
+    let timerInterval = null;
+    let coins = 0;
+
+    const timerElem = document.getElementById('timer');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const coinCountElem = document.getElementById('coinCount');
+    const penguinImg = document.getElementById('penguinImg');
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function updateTimerDisplay() {
+      timerElem.textContent = formatTime(timeLeft);
+    }
+
+    function switchSession() {
+      if (isWorking) {
+        // fin de session de travail
+        coins++;
+        coinCountElem.textContent = coins;
+        penguinImg.src = "https://via.placeholder.com/150?text=🐧🎉";
+        timeLeft = breakDuration;
+        isWorking = false;
+      } else {
+        // fin de pause
+        penguinImg.src = "https://via.placeholder.com/150?text=🐧";
+        timeLeft = workDuration;
+        isWorking = true;
+      }
+      updateTimerDisplay();
+    }
+
+    function tick() {
+      if (timeLeft > 0) {
+        timeLeft--;
+        updateTimerDisplay();
+      } else {
+        switchSession();
+      }
+    }
+
+    startBtn.addEventListener('click', () => {
+      if (!timerInterval) {
+        timerInterval = setInterval(tick, 1000);
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+      }
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+    });
+
+    resetBtn.addEventListener('click', () => {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timeLeft = workDuration;
+      isWorking = true;
+      updateTimerDisplay();
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      penguinImg.src = "https://via.placeholder.com/150?text=🐧";
+    });
+
+    // tâches
+    const newTaskInput = document.getElementById('newTaskInput');
+    const addTaskBtn = document.getElementById('addTaskBtn');
+    const taskList = document.getElementById('taskList');
+
+    addTaskBtn.addEventListener('click', () => {
+      const text = newTaskInput.value.trim();
+      if (text !== "") {
+        const li = document.createElement('li');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        li.appendChild(cb);
+        li.appendChild(document.createTextNode(' ' + text));
+        taskList.appendChild(li);
+        newTaskInput.value = "";
+      }
+    });
+
+    // initial display
+    updateTimerDisplay();
+  </script>
+</body>
+</html>
