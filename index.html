@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Manchot Étude Timer Animé</title>
+<title>Manchot Étude Timer Test</title>
 <style>
   body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #e0f7fa; }
   h1 { color: #00796b; }
@@ -12,20 +12,12 @@
   .penguin-container { position: relative; width: 200px; height: 200px; margin: 20px auto; transition: transform 0.5s; }
   .penguin-container.jump { animation: jump 0.6s; }
   .penguin-container.spin { animation: spin 0.8s; }
-  @keyframes jump {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-50px); }
-    100% { transform: translateY(0); }
-  }
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    50% { transform: rotate(360deg); }
-    100% { transform: rotate(0deg); }
-  }
+  @keyframes jump { 0% { transform: translateY(0); } 50% { transform: translateY(-50px); } 100% { transform: translateY(0); } }
+  @keyframes spin { 0% { transform: rotate(0deg); } 50% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
   .penguin-base { width: 100%; }
   .accessory { position: absolute; width: 50px; top: 10px; left: 75px; pointer-events: none; }
-  .tasks, .shop { margin: 20px; text-align: left; display: inline-block; background: #ffffffaa; padding: 15px; border-radius: 12px; }
-  input[type=text] { padding: 5px; width: 200px; }
+  .tasks, .shop, .settings { margin: 20px; text-align: left; display: inline-block; background: #ffffffaa; padding: 15px; border-radius: 12px; }
+  input[type=text], input[type=number] { padding: 5px; width: 150px; margin:5px 0; }
   ul { list-style: none; padding-left: 0; }
   li { margin: 5px 0; }
   .shop button { padding: 5px 10px; margin: 5px 0; cursor: pointer; }
@@ -33,13 +25,20 @@
 </head>
 <body>
 
-<h1>Manchot Étude Timer Animé</h1>
+<h1>Manchot Étude Timer Test</h1>
 
 <div class="penguin-container" id="penguinContainer">
-  <img id="penguinBase" class="penguin-base" src="https://via.placeholder.com/200?text=🐧" alt="Manchot">
+  <img id="penguinBase" class="penguin-base" src="https://share.google.com/gFUfjHzCcFM9h5v34" alt="Manchot">
   <img id="hat" class="accessory" src="" alt="Chapeau">
   <img id="glasses" class="accessory" src="" alt="Lunettes">
   <img id="scarf" class="accessory" src="" alt="Écharpe">
+</div>
+
+<div class="settings">
+  <h3>Réglages du Timer</h3>
+  <label>Temps de travail (min) : <input type="number" id="workInput" min="1" value="25"></label><br>
+  <label>Temps de pause (min) : <input type="number" id="breakInput" min="1" value="5"></label>
+  <button id="setTimeBtn">Appliquer</button>
 </div>
 
 <div class="timer" id="timer">25:00</div>
@@ -67,20 +66,26 @@
 
 <script>
   // ----- TIMER -----
-  const workDuration = 25*60;
-  const breakDuration = 5*60;
+  let workDuration = Number(document.getElementById('workInput').value)*60;
+  let breakDuration = Number(document.getElementById('breakInput').value)*60;
   let timeLeft = workDuration;
   let isWorking = true;
   let timerInterval = null;
-  let coins = Number(localStorage.getItem('coins')) || 0;
 
   const timerElem = document.getElementById('timer');
   const startBtn = document.getElementById('startBtn');
   const pauseBtn = document.getElementById('pauseBtn');
   const resetBtn = document.getElementById('resetBtn');
   const coinCountElem = document.getElementById('coinCount');
-  const penguinBase = document.getElementById('penguinBase');
   const penguinContainer = document.getElementById('penguinContainer');
+
+  // ----- COINS INITIALISATION -----
+  let coins = Number(localStorage.getItem('coins'));
+  if (!coins) {
+      coins = 10000; // pour tester
+      localStorage.setItem('coins', coins);
+  }
+  coinCountElem.textContent = coins;
 
   function formatTime(sec){
     const m = Math.floor(sec/60).toString().padStart(2,'0');
@@ -101,7 +106,7 @@
       coins++;
       localStorage.setItem('coins', coins);
       coinCountElem.textContent = coins;
-      animatePenguin('jump'); // jump when session finishes
+      animatePenguin('jump');
       timeLeft = breakDuration;
       isWorking=false;
     } else {
@@ -135,7 +140,14 @@
     startBtn.disabled=false; pauseBtn.disabled=true;
   });
 
-  updateTimerDisplay();
+  // ----- SETTINGS -----
+  document.getElementById('setTimeBtn').addEventListener('click',()=>{
+    workDuration = Number(document.getElementById('workInput').value)*60;
+    breakDuration = Number(document.getElementById('breakInput').value)*60;
+    timeLeft = workDuration;
+    isWorking=true;
+    updateTimerDisplay();
+  });
 
   // ----- TASKS -----
   const newTaskInput=document.getElementById('newTaskInput');
@@ -207,13 +219,13 @@
         const owned=JSON.parse(localStorage.getItem('accessories')||'{}');
         owned[item]=true; localStorage.setItem('accessories',JSON.stringify(owned));
         loadAccessories();
-        animatePenguin('spin'); // spin when buy accessory
+        animatePenguin('spin');
       } else { alert("Pas assez de coins!"); }
     });
   });
 
-  coinCountElem.textContent=coins;
   loadAccessories();
+  updateTimerDisplay();
 </script>
 </body>
 </html>
