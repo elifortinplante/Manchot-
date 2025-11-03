@@ -1,134 +1,219 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF‑8">
-  <title>Manchot Étude Timer</title>
-  <style>
-    body { font‑family: Arial, sans‑serif; text‑align: center; padding: 20px; }
-    .timer { font‑size: 48px; margin: 20px; }
-    .controls button { padding: 10px 20px; font‑size: 16px; }
-    .tasks { margin: 20px; text‑align: left; display: inline‑block; }
-    .coins { font‑size: 24px; margin: 20px; }
-    .penguin { width: 150px; margin: 20px auto; }
-  </style>
+<meta charset="UTF-8">
+<title>Manchot Étude Timer Animé</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #e0f7fa; }
+  h1 { color: #00796b; }
+  .timer { font-size: 60px; margin: 20px; color: #004d40; }
+  .controls button { padding: 10px 20px; font-size: 16px; margin: 5px; cursor: pointer; }
+  .coins { font-size: 24px; margin: 20px; color: #ff6f00; }
+  .penguin-container { position: relative; width: 200px; height: 200px; margin: 20px auto; transition: transform 0.5s; }
+  .penguin-container.jump { animation: jump 0.6s; }
+  .penguin-container.spin { animation: spin 0.8s; }
+  @keyframes jump {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-50px); }
+    100% { transform: translateY(0); }
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+  }
+  .penguin-base { width: 100%; }
+  .accessory { position: absolute; width: 50px; top: 10px; left: 75px; pointer-events: none; }
+  .tasks, .shop { margin: 20px; text-align: left; display: inline-block; background: #ffffffaa; padding: 15px; border-radius: 12px; }
+  input[type=text] { padding: 5px; width: 200px; }
+  ul { list-style: none; padding-left: 0; }
+  li { margin: 5px 0; }
+  .shop button { padding: 5px 10px; margin: 5px 0; cursor: pointer; }
+</style>
 </head>
 <body>
-  <h1>Mon Manchot Étude Timer</h1>
-  <div class="penguin">
-    <img id="penguinImg" src="https://via.placeholder.com/150?text=🐧" alt="Manchot">
-  </div>
-  <div class="timer" id="timer">25:00</div>
-  <div class="controls">
-    <button id="startBtn">Démarrer</button>
-    <button id="pauseBtn" disabled>Pause</button>
-    <button id="resetBtn">Réinitialiser</button>
-  </div>
-  <div class="coins">Coins gagnés : <span id="coinCount">0</span></div>
-  
-  <div class="tasks">
-    <h3>Ma liste de tâches</h3>
-    <input type="text" id="newTaskInput" placeholder="Ajouter une tâche…">
-    <button id="addTaskBtn">Ajouter</button>
-    <ul id="taskList"></ul>
-  </div>
-  
-  <script>
-    const workDuration = 25 * 60; // en secondes
-    const breakDuration = 5 * 60;
-    let timeLeft = workDuration;
-    let isWorking = true;
-    let timerInterval = null;
-    let coins = 0;
 
-    const timerElem = document.getElementById('timer');
-    const startBtn = document.getElementById('startBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const coinCountElem = document.getElementById('coinCount');
-    const penguinImg = document.getElementById('penguinImg');
+<h1>Manchot Étude Timer Animé</h1>
 
-    function formatTime(sec) {
-      const m = Math.floor(sec / 60).toString().padStart(2, '0');
-      const s = (sec % 60).toString().padStart(2, '0');
-      return `${m}:${s}`;
-    }
+<div class="penguin-container" id="penguinContainer">
+  <img id="penguinBase" class="penguin-base" src="https://via.placeholder.com/200?text=🐧" alt="Manchot">
+  <img id="hat" class="accessory" src="" alt="Chapeau">
+  <img id="glasses" class="accessory" src="" alt="Lunettes">
+  <img id="scarf" class="accessory" src="" alt="Écharpe">
+</div>
 
-    function updateTimerDisplay() {
-      timerElem.textContent = formatTime(timeLeft);
-    }
+<div class="timer" id="timer">25:00</div>
+<div class="controls">
+  <button id="startBtn">Démarrer</button>
+  <button id="pauseBtn" disabled>Pause</button>
+  <button id="resetBtn">Réinitialiser</button>
+</div>
 
-    function switchSession() {
-      if (isWorking) {
-        // fin de session de travail
-        coins++;
-        coinCountElem.textContent = coins;
-        penguinImg.src = "https://via.placeholder.com/150?text=🐧🎉";
-        timeLeft = breakDuration;
-        isWorking = false;
-      } else {
-        // fin de pause
-        penguinImg.src = "https://via.placeholder.com/150?text=🐧";
-        timeLeft = workDuration;
-        isWorking = true;
-      }
-      updateTimerDisplay();
-    }
+<div class="coins">Coins: <span id="coinCount">0</span></div>
 
-    function tick() {
-      if (timeLeft > 0) {
-        timeLeft--;
-        updateTimerDisplay();
-      } else {
-        switchSession();
-      }
-    }
+<div class="tasks">
+  <h3>Mes Tâches</h3>
+  <input type="text" id="newTaskInput" placeholder="Nouvelle tâche">
+  <button id="addTaskBtn">Ajouter</button>
+  <ul id="taskList"></ul>
+</div>
 
-    startBtn.addEventListener('click', () => {
-      if (!timerInterval) {
-        timerInterval = setInterval(tick, 1000);
-        startBtn.disabled = true;
-        pauseBtn.disabled = false;
-      }
-    });
+<div class="shop">
+  <h3>Magasin du Manchot</h3>
+  <button data-cost="5" data-item="hat">Chapeau (5 coins)</button>
+  <button data-cost="10" data-item="glasses">Lunettes (10 coins)</button>
+  <button data-cost="15" data-item="scarf">Écharpe (15 coins)</button>
+</div>
 
-    pauseBtn.addEventListener('click', () => {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      startBtn.disabled = false;
-      pauseBtn.disabled = true;
-    });
+<script>
+  // ----- TIMER -----
+  const workDuration = 25*60;
+  const breakDuration = 5*60;
+  let timeLeft = workDuration;
+  let isWorking = true;
+  let timerInterval = null;
+  let coins = Number(localStorage.getItem('coins')) || 0;
 
-    resetBtn.addEventListener('click', () => {
-      clearInterval(timerInterval);
-      timerInterval = null;
+  const timerElem = document.getElementById('timer');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const coinCountElem = document.getElementById('coinCount');
+  const penguinBase = document.getElementById('penguinBase');
+  const penguinContainer = document.getElementById('penguinContainer');
+
+  function formatTime(sec){
+    const m = Math.floor(sec/60).toString().padStart(2,'0');
+    const s = (sec%60).toString().padStart(2,'0');
+    return `${m}:${s}`;
+  }
+
+  function updateTimerDisplay(){ timerElem.textContent = formatTime(timeLeft); }
+
+  function animatePenguin(type){
+    penguinContainer.classList.remove('jump','spin');
+    void penguinContainer.offsetWidth; // restart animation
+    penguinContainer.classList.add(type);
+  }
+
+  function switchSession(){
+    if(isWorking){
+      coins++;
+      localStorage.setItem('coins', coins);
+      coinCountElem.textContent = coins;
+      animatePenguin('jump'); // jump when session finishes
+      timeLeft = breakDuration;
+      isWorking=false;
+    } else {
       timeLeft = workDuration;
-      isWorking = true;
-      updateTimerDisplay();
-      startBtn.disabled = false;
-      pauseBtn.disabled = true;
-      penguinImg.src = "https://via.placeholder.com/150?text=🐧";
-    });
-
-    // tâches
-    const newTaskInput = document.getElementById('newTaskInput');
-    const addTaskBtn = document.getElementById('addTaskBtn');
-    const taskList = document.getElementById('taskList');
-
-    addTaskBtn.addEventListener('click', () => {
-      const text = newTaskInput.value.trim();
-      if (text !== "") {
-        const li = document.createElement('li');
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        li.appendChild(cb);
-        li.appendChild(document.createTextNode(' ' + text));
-        taskList.appendChild(li);
-        newTaskInput.value = "";
-      }
-    });
-
-    // initial display
+      isWorking=true;
+    }
     updateTimerDisplay();
-  </script>
+  }
+
+  function tick(){
+    if(timeLeft>0){ timeLeft--; updateTimerDisplay(); } 
+    else { switchSession(); }
+  }
+
+  startBtn.addEventListener('click', ()=>{
+    if(!timerInterval){
+      timerInterval=setInterval(tick,1000);
+      startBtn.disabled=true; pauseBtn.disabled=false;
+    }
+  });
+
+  pauseBtn.addEventListener('click', ()=>{
+    clearInterval(timerInterval); timerInterval=null;
+    startBtn.disabled=false; pauseBtn.disabled=true;
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    clearInterval(timerInterval); timerInterval=null;
+    timeLeft=workDuration; isWorking=true;
+    updateTimerDisplay();
+    startBtn.disabled=false; pauseBtn.disabled=true;
+  });
+
+  updateTimerDisplay();
+
+  // ----- TASKS -----
+  const newTaskInput=document.getElementById('newTaskInput');
+  const addTaskBtn=document.getElementById('addTaskBtn');
+  const taskList=document.getElementById('taskList');
+
+  function saveTasks(){
+    const tasks=[];
+    taskList.querySelectorAll('li').forEach(li=>{
+      tasks.push({text: li.dataset.text, done: li.querySelector('input').checked});
+    });
+    localStorage.setItem('tasks',JSON.stringify(tasks));
+  }
+
+  function loadTasks(){
+    const tasks=JSON.parse(localStorage.getItem('tasks')||'[]');
+    tasks.forEach(t=>{
+      const li=document.createElement('li');
+      li.dataset.text=t.text;
+      const cb=document.createElement('input');
+      cb.type='checkbox'; cb.checked=t.done; cb.addEventListener('change',saveTasks);
+      li.appendChild(cb);
+      li.appendChild(document.createTextNode(' '+t.text));
+      taskList.appendChild(li);
+    });
+  }
+
+  addTaskBtn.addEventListener('click',()=>{
+    const text=newTaskInput.value.trim();
+    if(text!==""){
+      const li=document.createElement('li');
+      li.dataset.text=text;
+      const cb=document.createElement('input');
+      cb.type='checkbox'; cb.addEventListener('change',saveTasks);
+      li.appendChild(cb);
+      li.appendChild(document.createTextNode(' '+text));
+      taskList.appendChild(li);
+      newTaskInput.value=''; saveTasks();
+    }
+  });
+
+  loadTasks();
+
+  // ----- SHOP / ACCESSORIES -----
+  const accessories = {
+    hat: document.getElementById('hat'),
+    glasses: document.getElementById('glasses'),
+    scarf: document.getElementById('scarf')
+  };
+  const accessoryImages = {
+    hat: "https://via.placeholder.com/50?text=🎩",
+    glasses: "https://via.placeholder.com/50?text=🕶",
+    scarf: "https://via.placeholder.com/50?text=🧣"
+  };
+
+  function loadAccessories(){
+    const owned=JSON.parse(localStorage.getItem('accessories')||'{}');
+    Object.keys(accessories).forEach(k=>{
+      accessories[k].src = owned[k]? accessoryImages[k] : '';
+    });
+  }
+
+  document.querySelectorAll('.shop button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const item = btn.dataset.item;
+      const cost = Number(btn.dataset.cost);
+      if(coins>=cost){
+        coins-=cost; localStorage.setItem('coins',coins); coinCountElem.textContent=coins;
+        const owned=JSON.parse(localStorage.getItem('accessories')||'{}');
+        owned[item]=true; localStorage.setItem('accessories',JSON.stringify(owned));
+        loadAccessories();
+        animatePenguin('spin'); // spin when buy accessory
+      } else { alert("Pas assez de coins!"); }
+    });
+  });
+
+  coinCountElem.textContent=coins;
+  loadAccessories();
+</script>
 </body>
 </html>
